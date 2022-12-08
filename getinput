@@ -1,0 +1,4 @@
+#!/usr/bin/fish
+
+source .cookie
+curl -o inputs/$argv[1].input -b $AOC_COOKIE https://adventofcode.com/2022/day/$argv[1]/input -A "github.com/tgaref by tgaref@gmail.com"
