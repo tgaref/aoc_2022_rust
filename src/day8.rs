@@ -43,39 +43,46 @@ fn visible(grid: &Grid<isize>) -> usize
 {
     let mut prev = -1;
     let mut set = HashSet::new();
+    	
     for i in 0..grid.dims.0 {
-	for (j,v) in grid.row(i).enumerate() {
-	    if *v > prev {
-		set.insert((i,j));
-		prev = *v;		
-	    } 
+	let mut left = grid.row(1).enumerate();
+	let mut right = grid.row(1).enumerate().rev();
+	let iters: Vec<&mut dyn Iterator<Item=(usize,&isize)>> = vec![&mut left, &mut right];
+	for iter in iters {
+	    for (j,v) in iter {
+		if *v > prev {
+		    set.insert((i,j));
+		    prev = *v;		
+		} 
+	    }
+	    prev = -1;
 	}
-	prev = -1;
-	for (j,v) in grid.row(i).enumerate().rev() {
-	    if *v > prev {
-		set.insert((i,j));
-		prev = *v;		
-	    } 
-	}
-	prev = -1;
     }
+
     for j in 0..grid.dims.1 {
-	for (i,v) in grid.col(j).enumerate() {
-	    if *v > prev {
-		set.insert((i,j));
-		prev = *v;		
-	    } 
+	let mut up = grid.col(1).enumerate();
+	let mut down = grid.col(1).enumerate().rev();
+	let iters: Vec<&mut dyn Iterator<Item=(usize,&isize)>> = vec![&mut up, &mut down];
+	for iter in iters {
+	    for (i,v) in iter {
+		if *v > prev {
+		    set.insert((i,j));
+		    prev = *v;		
+		} 
+	    }
+	    prev = -1;
 	}
-	prev = -1;
-	for (i,v) in grid.col(j).enumerate().rev() {
-	    if *v > prev {
-		set.insert((i,j));
-		prev = *v;		
-	    } 
-	}
-	prev = -1;
     }
     set.len()
+}
+
+const LEFT: (isize, isize) = (0, -1);
+const RIGHT: (isize, isize) = (0, 1);
+const UP: (isize, isize) = (-1, 0);
+const DOWN: (isize, isize) = (1, 0);
+
+fn in_bounds(pos: (isize, isize), dims: (usize, usize)) -> bool {
+    pos.0 >= 0 && pos.0 < (dims.0 as isize) && pos.1 >= 0 && pos.1 < (dims.1 as isize)
 }
 
 fn score(grid: &Grid<isize>) -> isize {
@@ -84,47 +91,21 @@ fn score(grid: &Grid<isize>) -> isize {
     for x in 1..m-1 {
 	for y in 1..n-1 {
 	    let tree = grid[x][y];
-	    let mut left = 0;
-	    let mut j = (y-1) as isize;
-	    while j >= 0 && grid[x][j as usize] < tree {
-		left += 1;
-		j -= 1;
+	    let mut current_tree_score = 1;
+	    for dir in [LEFT, RIGHT, UP, DOWN] {
+		let mut pos: (isize, isize) = (x as isize, y as isize);
+		let mut vis = 0;
+		pos = (pos.0 + dir.0, pos.1 + dir.1);
+		while in_bounds(pos, (m,n)) && grid[pos.0 as usize][pos.1 as usize] < tree {
+		    vis += 1;
+		    pos = (pos.0 + dir.0, pos.1 + dir.1);
+		}
+		if in_bounds(pos, (m,n)) {
+		    vis += 1
+		}
+		current_tree_score *= vis;
 	    }
-	    if j >= 0 {
-		left += 1
-	    }
-
-	    let mut j = y+1;
-	    let mut right = 0;
-	    while j < n && grid[x][j] < tree {
-		right += 1;
-		j += 1;
-	    }
-	    if j < n {
-		right += 1
-	    }
-
-	    let mut up = 0;
-	    let mut i = (x-1) as isize;
-	    while i >= 0 && grid[i as usize][y] < tree {
-		up += 1;
-		i -= 1;
-	    }
-	    if i >= 0 {
-		up += 1
-	    }
-
-	    let mut i = x+1;
-	    let mut down = 0;
-	    while i < n && grid[i][y] < tree {
-		down += 1;
-		i += 1;
-	    }
-	    if i < n {
-		down += 1
-	    }
-
-	    win = win.max(left * right * up * down);
+ 	    win = win.max(current_tree_score);
 	}
     }
     win
