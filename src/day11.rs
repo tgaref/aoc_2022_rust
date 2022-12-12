@@ -1,8 +1,8 @@
 use aoc_2022_rust::Puzzle;
 use nom::{ sequence::tuple,
-	   character::{ complete::{digit1, char}, is_alphabetic },
+	   character::{ complete::{digit1, char} },
 	   combinator::map,
-	   bytes::complete::{tag, take_till},
+	   bytes::complete::{ tag },
 	   branch::alt,
 	   multi::many1,
 	   IResult,
@@ -120,12 +120,12 @@ impl Puzzle for Day11 {
     }
 
     fn part1(&self)-> String {
-	let mut monkeys = self.input.clone();
+	let monkeys = self.input.clone();
 	simulate(monkeys, 20, None, Some(3))
     }      				    
 
     fn part2(&self) -> String {
-	let mut monkeys = self.input.clone();
+	let monkeys = self.input.clone();
 	let n = monkeys.iter().fold(1, |acc, m| lcm(acc, m.test));
 	simulate(monkeys, 10000, Some(n), None)
     }        
@@ -137,7 +137,7 @@ fn simulate(mut monkeys: Vec<Monkey>, steps: usize, modulus: Option<u64>, reduce
 	inspections.push(0)
     }
     let mut new_inspections: Vec<u64>;
-    for r in 0..steps {
+    for _ in 0..steps {
 	(monkeys, new_inspections) = round(monkeys, modulus, reduce);
 	inspections = inspections.iter().zip(new_inspections.into_iter()).map(|(a,b)| a+b).collect::<Vec<_>>();
     }
@@ -163,7 +163,7 @@ fn update_worry_level(wl: u64, op: Operation, modulus: Option<u64>, reduce: Opti
     
 fn round(mut monkeys: Vec<Monkey>, modulus: Option<u64>, reduce: Option<u64>) -> (Vec<Monkey>, Vec<u64>) {
     let mut inspections = Vec::<u64>::new();
-    let mut new_monkeys = monkeys.clone();
+    let mut new_monkeys;
     for n in 0..monkeys.len() {
 	new_monkeys = monkeys.clone();
 	let monkey = &monkeys[n];

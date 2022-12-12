@@ -22,7 +22,7 @@ enum Instruction { NOOP, ADDX(isize) }
 use Instruction::{NOOP, ADDX};
 
 fn parse(line: &str) -> Instruction {
-    if let Some((i, n)) = line.split_once(' ') {
+    if let Some((_, n)) = line.split_once(' ') {
 	    ADDX(n.parse::<isize>().unwrap())
     } else {
 	NOOP
@@ -68,7 +68,6 @@ impl Puzzle for Day10 {
     }      				    
 
     fn part2(&self) -> String {
-	let of_interest = [20, 60, 100, 140, 180, 220].iter().collect::<HashSet<_>>();
 	let mut pixels = vec!['#'];	
 	println!("{:?}", xvalues(&self.input));
 	for (i,x) in xvalues(&self.input).iter().enumerate() {

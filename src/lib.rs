@@ -33,7 +33,8 @@ impl<T> Grid<T> {
 	Grid { array: Vec::new(), dims: (0,0) }
     }
     
-    pub fn from_rows(data: Vec<Vec<T>>, dims: (usize, usize)) -> Self {
+    pub fn from_rows(data: Vec<Vec<T>>) -> Self {
+	let dims = (data.len(), data[0].len());
 	let mut array = Vec::with_capacity(dims.0 * dims.1);
 	for mut v in data {
 	    array.append(&mut v)

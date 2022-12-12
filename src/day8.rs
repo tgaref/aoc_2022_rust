@@ -26,8 +26,7 @@ impl Puzzle for Day8 {
 	    let row = line.chars().map(|c| c.to_digit(10).unwrap() as isize).collect::<Vec<_>>();
 	    grid.push(row);
 	}
-	let dims = (grid.len(), grid[0].len());
-	self.input = Grid::from_rows(grid, dims);
+	self.input = Grid::from_rows(grid);
     }
 
     fn part1(&self)-> String {
