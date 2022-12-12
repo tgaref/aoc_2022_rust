@@ -8,6 +8,8 @@ mod day6;
 mod day7;
 mod day8;
 mod day9;
+mod day10;
+mod day11;
 
 use aoc_2022_rust as lib;
 use lib::Puzzle;
@@ -21,6 +23,8 @@ use day6::Day6;
 use day7::Day7;
 use day8::Day8;
 use day9::Day9;
+use day10::Day10;
+use day11::Day11;
 
 enum Selector {
     All,
@@ -45,9 +49,12 @@ fn main() {
     let mut day7 = Day7::new();
     let mut day8 = Day8::new();
     let mut day9 = Day9::new();
+    let mut day10 = Day10::new();
+    let mut day11 = Day11::new();
     
     let mut days: Vec<&mut dyn Puzzle> = vec![&mut day1, &mut day2, &mut day3, &mut day4, &mut day5,
-					      &mut day6, &mut day7, &mut day8, &mut day9];
+					      &mut day6, &mut day7, &mut day8, &mut day9, &mut day10,
+					      &mut day11];
     
     match selection {
 	Selector::Single(n) => lib::print_day(2022, n, days[n-1].run()),
