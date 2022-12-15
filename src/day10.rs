@@ -63,13 +63,11 @@ impl Puzzle for Day10 {
 		strength += *x * ((i+2) as isize);
 	    }
 	}
-
         format!("{:?}", strength)
     }      				    
 
     fn part2(&self) -> String {
-	let mut pixels = vec!['#'];	
-	println!("{:?}", xvalues(&self.input));
+	let mut pixels = vec!['#'];
 	for (i,x) in xvalues(&self.input).iter().enumerate() {
 	    let pos = (i+2).rem_euclid(40) as isize;
 	    if pos == *x || pos == *x+1 || pos == *x+2  {
