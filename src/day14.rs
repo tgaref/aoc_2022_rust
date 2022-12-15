@@ -134,7 +134,7 @@ fn fall(map: &mut Map, pos: Position, last_rock: isize) -> bool
 	next_pos = step(map, current_pos, Some(D));
     }
     map.insert(current_pos, 'o');
-    true
+    true    
 }
 
 impl Puzzle for Day14 {
@@ -154,10 +154,10 @@ impl Puzzle for Day14 {
 	let last_rock = self.input.keys().max().unwrap().y;
 	let mut map = self.input.clone();
 	let mut count = 0;
-	while fall(&mut map, Position { x: 500, y: 0 }, last_rock) {
+	let starting_pos = Position { x: 500, y: 0 };
+	while fall(&mut map, starting_pos, last_rock) {
 	    count += 1;
 	}
-	//print_map(&map);
         format!("{:?}", count)
     }      				    
 
@@ -168,8 +168,8 @@ impl Puzzle for Day14 {
 	    map.insert(Position { x: 500 + x, y: last_rock + 2 }, '#');
 	}
 	let mut count = 0;
-	let p = Position { x: 500, y: 0 };
-	while map.get(&p).is_none() && fall(&mut map, p, last_rock + 3) {
+	let starting_pos = Position { x: 500, y: 0 };
+	while map.get(&starting_pos).is_none() && fall(&mut map, starting_pos, last_rock + 3) {
 	    count += 1;
 	}
 	//print_map(&map);
