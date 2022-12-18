@@ -11,16 +11,18 @@ use nom::{ sequence::{ tuple, pair },
 
 #[derive(Debug, Clone)]
 pub struct Day16 {
-    input: Map
+    dist: HashMap<(Valve, Valve), isize>,
+    goal: HashSet<Valve>
 }
 
 impl Day16 {
     pub fn new() -> Day16 {
-	Day16 { input: HashMap::new() } 	
+	Day16 { dist: HashMap::new(), goal: HashSet::new() } 	
     }
     
     pub fn _clear(&mut self) {
-	self.input = HashMap::new()
+	self.dist = HashMap::new();
+	self.goal = HashSet::new();
     }
 }
 
@@ -73,9 +75,9 @@ fn traverse_alone(dist: &HashMap<(Valve, Valve), isize>, state: State1, max_gain
 	new_closed.remove(&valve);
 	let new_remaining_steps = state.remaining_steps - dist[&(state.valve, *valve)] - 1;
 	let newstate = State1 { valve: *valve,
-			       closed: new_closed,
-			       gain: state.gain + new_remaining_steps * valve.rate,
-			       remaining_steps: new_remaining_steps
+				closed: new_closed,
+				gain: state.gain + new_remaining_steps * valve.rate,
+				remaining_steps: new_remaining_steps
 	};	
 	traverse_alone(&dist, newstate, max_gain);
     }    
@@ -90,11 +92,6 @@ struct State2 {
     remaining_steps: isize,
     me_traveling: isize,
     elephant_traveling: isize
-}
-
-fn can_move(dist: &HashMap<(Valve, Valve), isize>, valve: Valve, closed: &HashSet<Valve>, remaining_steps: isize) -> bool {
-    let closest_valve = closed.iter().fold(isize::MAX, |acc, v| acc.min(dist[&(valve, *v)]));
-    closest_valve <= remaining_steps
 }
 
 fn traverse_with_elephant(dist: &HashMap<(Valve, Valve), isize>, state: State2, max_gain: &mut isize) {
@@ -112,20 +109,13 @@ fn traverse_with_elephant(dist: &HashMap<(Valve, Valve), isize>, state: State2, 
 	    0
 	};
 
-//	println!("Extra = {extra:}");
 	*max_gain = (*max_gain).max(state.gain + extra_me + extra_elephant);	
 	return ()	    
     }
 
     if state.me_traveling == 0 && state.elephant_traveling == 0 {
 	for new_me in &state.closed {
-//	    if state.remaining_steps <= dist[&(state.me, *new_me)] + 1 {
-//		continue;
-//	    }
 	    for new_elephant in &state.closed {
-//		if state.remaining_steps <= dist[&(state.elephant, *new_elephant)] + 1 {
-//		    continue;
-//		}
 		if new_elephant == new_me {
 		    continue;
 		}
@@ -148,9 +138,6 @@ fn traverse_with_elephant(dist: &HashMap<(Valve, Valve), isize>, state: State2, 
 	}
     } else if state.elephant_traveling == 0 {
 	for new_elephant in &state.closed {
-//	    if state.remaining_steps <= dist[&(state.elephant, *new_elephant)] + 1 {
-//		continue;
-//	    }
 	    let mut new_closed = state.closed.clone();
 	    new_closed.remove(&new_elephant);
 	    let new_remaining_steps_me = state.remaining_steps - state.me_traveling;
@@ -168,9 +155,6 @@ fn traverse_with_elephant(dist: &HashMap<(Valve, Valve), isize>, state: State2, 
 	}
     } else if state.me_traveling == 0 {
 	for new_me in &state.closed {
-//	    if state.remaining_steps <= dist[&(state.me, *new_me)] + 1 {
-//		continue;
-//	    }
 	    let mut new_closed = state.closed.clone();
 	    new_closed.remove(&new_me);
 	    let new_remaining_steps_me = state.remaining_steps - dist[&(state.me, *new_me)] - 1;
@@ -194,72 +178,74 @@ impl Puzzle for Day16 {
 	const INPUT: &str = include_str!("../inputs/16.input");
 	let mut valve_names = HashMap::new();
 	let mut valve_list = HashMap::new();
+	let mut input = HashMap::new();
 	for line in INPUT.lines() {
 	    let (valve, list) = parse_line(line).unwrap().1;
-	    valve_names.insert(valve.name.clone(), valve.clone());
+	    valve_names.insert(valve.name, valve);
 	    valve_list.insert(valve, list);
 	}
 	let valves = valve_names.values().collect::<Vec<_>>();
+
 	for valve in valves {
 	    let list = valve_list[&valve]
 		.iter()
 		.map(|name| valve_names[name].clone())
 		.collect::<Vec<_>>();
-	    self.input.insert(valve.clone(), list);	    
+	    input.insert(valve.clone(), list);	    
 	}
-    }
 
-    fn part1(&self)-> String {
-	let mut dist = HashMap::new();
-	let goal = self.input.keys().filter(|v| v.rate > 0).map(|v| *v).collect::<HashSet<_>>();
-	for start in &goal {
-	    let h = all_shortest_paths(&self.input, *start, &goal);
+	self.goal = input.keys().filter(|v| v.rate > 0).map(|v| *v).collect::<HashSet<_>>();
+	for start in &self.goal {
+	    let h = all_shortest_paths(&input, *start, &self.goal);
 	    for (end, d) in h {
-		dist.insert((*start, end), d);
+		self.dist.insert((*start, end), d);
 	    }
 	}
 	
 	let starting_valve = Valve { name: ('A', 'A'), rate: 0 };
-	let h = all_shortest_paths(&self.input, starting_valve, &goal);
+	let h = all_shortest_paths(&input, starting_valve, &self.goal);
 	for (end, d) in h {
-	    dist.insert((starting_valve, end), d);
+	    self.dist.insert((starting_valve, end), d);
 	}
+    }
+
+    fn part1(&self)-> String {
+	let starting_valve = Valve { name: ('A', 'A'), rate: 0 };
 	let state = State1 { valve: starting_valve,
-			    closed: goal,
-			    gain: 0,
-			    remaining_steps: 30 };
+			     closed: self.goal.clone(),
+			     gain: 0,
+			     remaining_steps: 30 };
 	let mut gain = 0;
-	traverse_alone(&dist, state, &mut gain);
+	traverse_alone(&self.dist, state, &mut gain);
 	
 	format!("{:?}", gain)
     }      				    
 
     fn part2(&self) -> String {
-	let mut dist = HashMap::new();
-	let goal = self.input.keys().filter(|v| v.rate > 0).map(|v| *v).collect::<HashSet<_>>();
-	for start in &goal {
-	    let h = all_shortest_paths(&self.input, *start, &goal);
-	    for (end, d) in h {
-		dist.insert((*start, end), d);
-	    }
-	}
-	
 	let starting_valve = Valve { name: ('A', 'A'), rate: 0 };
-	let h = all_shortest_paths(&self.input, starting_valve, &goal);
-	for (end, d) in h {
-	    dist.insert((starting_valve, end), d);
-	}
-	let state = State2 { me: starting_valve,
-			     elephant: starting_valve,
-			     closed: goal,
-			     gain: 0,
-			     remaining_steps: 26,
-			     me_traveling: 0,
-			     elephant_traveling: 0
-	};
 	let mut gain = 0;
-	traverse_with_elephant(&dist, state, &mut gain);
-	
+	let goal_vec = self.goal.iter().collect::<Vec<_>>();
+	for i in 0..self.goal.len() {
+	    for j in i+1..self.goal.len() {
+		let me = goal_vec[i];
+		let elephant = goal_vec[j];
+		let mut closed = self.goal.clone();
+		closed.remove(&me);
+		closed.remove(&elephant);
+		let remaining_steps_me = 26 - self.dist[&(starting_valve, *me)] - 1;
+		let remaining_steps_elephant = 26 - self.dist[&(starting_valve, *elephant)] - 1;
+		let remaining_steps = remaining_steps_me.max(remaining_steps_elephant);
+		let state = State2 { me: *me,
+				     elephant: *elephant,
+				     closed: closed,
+				     gain: 0,
+				     remaining_steps: remaining_steps,
+				     me_traveling: remaining_steps - remaining_steps_me,
+				     elephant_traveling: remaining_steps - remaining_steps_elephant
+		};	
+		traverse_with_elephant(&self.dist, state, &mut gain);
+	    }    
+	}	
 	format!("{:?}", gain)
     }        
 }
