@@ -32,7 +32,7 @@ impl<T> Grid<T> {
     pub fn new() -> Self {
 	Grid { array: Vec::new(), dims: (0,0) }
     }
-    
+   
     pub fn from_rows(data: Vec<Vec<T>>) -> Self {
 	let dims = (data.len(), data[0].len());
 	let mut array = Vec::with_capacity(dims.0 * dims.1);
