@@ -12,6 +12,7 @@ mod day19;
 mod day2;
 mod day20;
 mod day21;
+mod day22;
 mod day3;
 mod day4;
 mod day5;
@@ -37,6 +38,7 @@ use day19::Day19;
 use day2::Day2;
 use day20::Day20;
 use day21::Day21;
+use day22::Day22;
 use day3::Day3;
 use day4::Day4;
 use day5::Day5;
@@ -80,11 +82,12 @@ fn main() {
     let mut day19 = Day19::new();
     let mut day20 = Day20::new();
     let mut day21 = Day21::new();
+    let mut day22 = Day22::new();
 
     let mut days: Vec<&mut dyn Puzzle> = vec![
         &mut day1, &mut day2, &mut day3, &mut day4, &mut day5, &mut day6, &mut day7, &mut day8,
         &mut day9, &mut day10, &mut day11, &mut day12, &mut day13, &mut day14, &mut day15,
-        &mut day16, &mut day17, &mut day18, &mut day19, &mut day20, &mut day21,
+        &mut day16, &mut day17, &mut day18, &mut day19, &mut day20, &mut day21, &mut day22,
     ];
 
     match selection {
